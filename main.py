@@ -138,13 +138,8 @@ def main():
                     page.get_by_role("menuitem").click()
                     page.locator("#menu-item-5").click()
                     primary = page.locator("button[class*='button'][class*='primary']")
-                    secondary = page.locator("button[class*='button'][class*='secondary']")
-                    if now.weekday() == args.ttf_day:
-                        log.info("Badging with télétravail flottant")
-                        secondary.click()
-                    else:
-                        log.info("Badging normally")
-                        primary.click()
+                    log.info("Badging")
+                    primary.click()
                     page.wait_for_timeout(1000)
                     browser.close()
                 else:
