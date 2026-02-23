@@ -7,6 +7,7 @@ import re
 
 from playwright.sync_api import sync_playwright
 import keyring
+import discord_webhook
 
 def get_badgeage_times(in_badgeage_times, random_offset_range):
     now = dt.now()
@@ -24,7 +25,6 @@ def main():
         handlers=[
             log.FileHandler("tempo.log"),
             log.StreamHandler(),
-            #TODO Discord handler?
         ]
     )
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -47,10 +47,17 @@ def main():
         default=30,
         help='Range in minutes for random offset around badgeage times'
     )
+    parser.add_argument(
+        "--discord-webhook-url", '-d',
+        type=str,
+        default=None,
+        help="Discord webhook URL for notifications"
+    )
     args = parser.parse_args()
     badgeage_times = list(get_badgeage_times(args.badgeage_times, args.random_offset_range))
     now = dt.now()
     clock_out = badgeage_times[-1]
+    is_errored = False
     if now > clock_out:
         log.info(f"{now} is after end of day")
         return
@@ -58,6 +65,7 @@ def main():
         log.info(f"{now} is not a working day")
         return
     while True:
+        last_error = None
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
@@ -143,6 +151,37 @@ def main():
                     time.sleep(time_to)
         except (Exception,) as e:
             log.exception("An error occurred, retrying...")
+            last_error = e
+        else:
+            last_error = None
+        if last_error is not None and not is_errored:
+            is_errored = True
+            if args.discord_webhook_url:
+                webhook = discord_webhook.DiscordWebhook(url=args.discord_webhook_url)
+                embed = discord_webhook.DiscordEmbed(title="Tempo", color="ff0000")
+                embed.add_embed_field(
+                    name="Status",
+                    value=f"An error occurred in tempo badgeage script for {args.username}, check logs for details.",
+                    inline=False,
+                )
+                embed.add_embed_field(
+                    name="Exception",
+                    value=str(last_error),
+                    inline=False,
+                )
+                webhook.add_embed(embed)
+                webhook.execute()
+        elif last_error is None and is_errored:
+            is_errored = False
+            if args.discord_webhook_url:
+                webhook = discord_webhook.DiscordWebhook(url=args.discord_webhook_url)
+                embed = discord_webhook.DiscordEmbed(
+                    title="Tempo",
+                    description=f"Error resolved in tempo badgeage script for {args.username}, back to normal operation.",
+                    color="00ff00"
+                )
+                webhook.add_embed(embed)
+                webhook.execute()
 
 
 if __name__ == '__main__':
