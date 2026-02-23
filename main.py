@@ -34,7 +34,7 @@ def main():
         help='Username for tempo.univ-eiffel.fr, as stored on the local keyring'
     )
     parser.add_argument(
-        '--badgeage-times',
+        '--badgeage-times', '-b',
         nargs=4,
         type=float,
         metavar=("Entrée-matin", "Sortie-midi", "Entrée-après-midi", "Sortie-soir"),
@@ -42,7 +42,7 @@ def main():
         help='Times around which to badge'
     )
     parser.add_argument(
-        '--random-offset-range',
+        '--random-offset-range', '-r',
         type=int,
         default=30,
         help='Range in minutes for random offset around badgeage times'
