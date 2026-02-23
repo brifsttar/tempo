@@ -42,12 +42,6 @@ def main():
         help='Times around which to badge'
     )
     parser.add_argument(
-        '--ttf_day',
-        type=int,
-        default=2,
-        help='Day of the week for "télétravail flottant" (0=Monday, 6=Sunday)'
-    )
-    parser.add_argument(
         '--random-offset-range',
         type=int,
         default=30,
