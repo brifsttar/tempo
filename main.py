@@ -104,11 +104,12 @@ def main():
                 for i in range(absences.count()):
                     element = absences.nth(i)
                     style = element.get_attribute("style")
-                    match = re.search(r"grid-column:\s*(\d+)\s*/", style)
+                    match = re.search(r"grid-column:\s*(\d+)\s*/\s*(\d+)", style)
                     if match:
                         #TODO Handle half-day absences properly
-                        absence_day = (int(match.group(1)) - 1) // 2
-                        if absence_day == today:
+                        absence_day_start = (int(match.group(1)) - 1) // 2
+                        absence_day_end = (int(match.group(2)) - 1) // 2
+                        if absence_day_start <= today <= absence_day_end:
                             log.info("Today has a legitimate absence, exiting")
                             browser.close()
                             return
