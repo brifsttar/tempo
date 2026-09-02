@@ -109,7 +109,7 @@ def main():
                         #TODO Handle half-day absences properly
                         absence_day_start = (int(match.group(1)) - 1) // 2
                         absence_day_end = (int(match.group(2)) - 1) // 2
-                        if absence_day_start <= today <= absence_day_end:
+                        if absence_day_start <= today < absence_day_end:
                             log.info("Today has a legitimate absence, exiting")
                             browser.close()
                             return
